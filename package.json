@@ -1,0 +1,63 @@
+{
+  "name": "omelet-slide-generator",
+  "version": "0.1.0",
+  "description": "TypeScript-driven .pptx slide generator with theme support, math (KaTeX/OMML), code highlighting, and Mermaid-friendly content modules.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "omelet-slide": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "dev": "ts-node src/cli.ts"
+  },
+  "keywords": [
+    "pptx",
+    "powerpoint",
+    "slides",
+    "presentation",
+    "generator",
+    "typescript",
+    "cli",
+    "katex",
+    "omml",
+    "shiki"
+  ],
+  "author": "Nguyen Anh Binh <socrat.nguyenanhbinh@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/maycuatroi1/omelet-slide-generator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maycuatroi1/omelet-slide-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maycuatroi1/omelet-slide-generator/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "jiti": "^2.4.2",
+    "katex": "^0.16.40",
+    "latex-to-omml": "^2.1.1",
+    "lucide-static": "^1.0.1",
+    "mathjax-full": "^3.2.1",
+    "mathml2omml": "^0.5.0",
+    "pptxgenjs": "^4.0.1",
+    "sharp": "^0.34.5",
+    "shiki": "^4.0.2",
+    "temml": "^0.13.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.7.0"
+  }
+}
