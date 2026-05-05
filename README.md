@@ -3,32 +3,49 @@
 Generate `.pptx` slide decks from a TypeScript content file. Themes, code highlighting (Shiki), native math (KaTeX → OMML), images, and 25+ built-in layouts.
 
 ```bash
-npx omelet-slide-generator slides/index.ts deck.pptx --theme=minimalism
+npx github:maycuatroi1/omelet-slide-generator slides/index.ts deck.pptx --theme=minimalism
 ```
 
 ## Install
 
-Run once (no install) via `npx`:
+This package is distributed via **GitHub** (not npm registry). Install directly from the repo.
+
+### One-shot via `npx` (no install)
 
 ```bash
-npx omelet-slide-generator <content-file> <output.pptx> [options]
+# Latest from main
+npx github:maycuatroi1/omelet-slide-generator <content-file> <output.pptx> [options]
+
+# Pinned to a release tag (recommended for reproducible builds)
+npx github:maycuatroi1/omelet-slide-generator#v0.1.0 <content-file> <output.pptx> [options]
 ```
 
-Or install globally:
+### As a project dev dependency
 
 ```bash
-npm install -g omelet-slide-generator
-omelet-slide slides/index.ts deck.pptx
-```
-
-Or as a project dev dependency:
-
-```bash
-npm install --save-dev omelet-slide-generator
+npm install --save-dev github:maycuatroi1/omelet-slide-generator
+# or pin: npm install --save-dev github:maycuatroi1/omelet-slide-generator#v0.1.0
 npx omelet-slide slides/index.ts deck.pptx
 ```
 
-> Requires Node.js 18+.
+In `package.json`:
+
+```json
+{
+  "devDependencies": {
+    "omelet-slide-generator": "github:maycuatroi1/omelet-slide-generator#v0.1.0"
+  }
+}
+```
+
+### Global install
+
+```bash
+npm install -g github:maycuatroi1/omelet-slide-generator
+omelet-slide slides/index.ts deck.pptx
+```
+
+> Requires Node.js 18+. The package builds itself on install via a `prepare` script — first install takes ~30s while TypeScript compiles.
 
 ## CLI
 
@@ -109,7 +126,7 @@ export default content;
 Run:
 
 ```bash
-npx omelet-slide slides/index.ts lecture7.pptx --theme=minimalism
+npx github:maycuatroi1/omelet-slide-generator slides/index.ts lecture7.pptx --theme=minimalism
 ```
 
 ### Splitting content across multiple files
