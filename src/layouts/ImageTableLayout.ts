@@ -3,7 +3,7 @@ import { SlideData } from '../types';
 import { BaseLayout } from './BaseLayout';
 
 export class ImageTableLayout extends BaseLayout {
-  protected renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): void {
+  protected async renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): Promise<void> {
     const isBanner = this.theme.header.style === 'banner';
     const startY = isBanner ? 1.2 : 1.0;
 
@@ -20,25 +20,9 @@ export class ImageTableLayout extends BaseLayout {
     const headerFontSize = totalRows > 6 ? 12 : 13;
 
     if (imgPath) {
-      slide.addImage({
-        path: imgPath,
-        x: 1.0, y: startY, w: 11.33, h: imgH,
-        sizing: { type: 'contain', w: 11.33, h: imgH },
-      });
+      await this.addContainedImage(slide, imgPath, 1.0, startY, 11.33, imgH);
     } else {
-      if (isBanner) {
-        this.roundedRect(slide, 1.0, startY, 11.33, imgH, {
-          fill: { color: this.C.light }, rectRadius: 0.1,
-          line: { color: this.C.border, width: 1, dashType: 'dash' },
-        });
-      } else {
-        this.addBox(slide, 1.0, startY, 11.33, imgH);
-      }
-      slide.addText(`[Image: ${data.imagePath || 'not specified'}]`, {
-        x: 1.0, y: startY + imgH / 2 - 0.3, w: 11.33, h: 0.6,
-        fontSize: 14, color: this.C.medium, align: 'center',
-        fontFace: this.F.body,
-      });
+      this.addImagePlaceholder(slide, 1.0, startY, 11.33, imgH, data.imagePath);
     }
 
     const tableRows: any[][] = [];

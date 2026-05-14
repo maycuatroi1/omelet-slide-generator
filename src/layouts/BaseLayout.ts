@@ -102,6 +102,45 @@ export abstract class BaseLayout {
     if (logo) await this.imageResolver.getImageSize(logo);
   }
 
+  protected async addContainedImage(
+    slide: PptxGenJS.Slide,
+    imgPath: string,
+    boxX: number, boxY: number, boxW: number, boxH: number,
+  ): Promise<void> {
+    const size = await this.imageResolver.getImageSize(imgPath);
+    if (!size) {
+      slide.addImage({ path: imgPath, x: boxX, y: boxY, w: boxW, h: boxH });
+      return;
+    }
+    const fitted = ImageResolver.fitToBox(size.ratio, boxW, boxH);
+    const x = boxX + (boxW - fitted.w) / 2;
+    const y = boxY + (boxH - fitted.h) / 2;
+    slide.addImage({ path: imgPath, x, y, w: fitted.w, h: fitted.h });
+  }
+
+  protected addImagePlaceholder(
+    slide: PptxGenJS.Slide,
+    x: number, y: number, w: number, h: number,
+    imagePath?: string,
+    fontSize = 14,
+  ): void {
+    const isBanner = this.theme.header.style === 'banner';
+    if (isBanner) {
+      this.roundedRect(slide, x, y, w, h, {
+        fill: { color: this.C.light }, rectRadius: 0.1,
+        line: { color: this.C.border, width: 1, dashType: 'dash' },
+      });
+    } else {
+      this.addBox(slide, x, y, w, h);
+    }
+    slide.addText(`[Image: ${imagePath || 'not specified'}]`, {
+      x, y: y + h / 2 - 0.3, w, h: 0.6,
+      fontSize: isBanner ? fontSize + 2 : fontSize,
+      color: this.C.medium, align: 'center',
+      fontFace: this.F.body,
+    });
+  }
+
   protected roundedRect(
     slide: PptxGenJS.Slide,
     x: number, y: number, w: number, h: number,

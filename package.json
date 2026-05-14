@@ -1,6 +1,6 @@
 {
   "name": "omelet-slide-generator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript-driven .pptx slide generator with theme support, math (KaTeX/OMML), code highlighting, and Mermaid-friendly content modules.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

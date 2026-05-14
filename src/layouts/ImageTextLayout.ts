@@ -3,7 +3,7 @@ import { SlideData } from '../types';
 import { BaseLayout } from './BaseLayout';
 
 export class ImageTextLayout extends BaseLayout {
-  protected renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): void {
+  protected async renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): Promise<void> {
     const isBanner = this.theme.header.style === 'banner';
     const isLeft = (data.imagePosition || 'left') === 'left';
     const imgX = isLeft ? 0.5 : 6.83;
@@ -14,25 +14,9 @@ export class ImageTextLayout extends BaseLayout {
     const imgPath = data.imagePath ? this.imageResolver.resolveImage(data.imagePath) : null;
 
     if (imgPath) {
-      slide.addImage({
-        path: imgPath,
-        x: imgX, y: contentY, w: 6.0, h: contentH,
-        sizing: { type: 'contain', w: 6.0, h: contentH },
-      });
+      await this.addContainedImage(slide, imgPath, imgX, contentY, 6.0, contentH);
     } else {
-      if (isBanner) {
-        this.roundedRect(slide, imgX, contentY, 6.0, contentH, {
-          fill: { color: this.C.light }, rectRadius: 0.1,
-          line: { color: this.C.border, width: 1, dashType: 'dash' },
-        });
-      } else {
-        this.addBox(slide, imgX, contentY, 6.0, contentH);
-      }
-      slide.addText(`[Image: ${data.imagePath || 'not specified'}]`, {
-        x: imgX, y: 3.5, w: 6.0, h: 1.0,
-        fontSize: 14, color: this.C.medium, align: 'center',
-        fontFace: this.F.body,
-      });
+      this.addImagePlaceholder(slide, imgX, contentY, 6.0, contentH, data.imagePath);
     }
 
     if (!isBanner) {

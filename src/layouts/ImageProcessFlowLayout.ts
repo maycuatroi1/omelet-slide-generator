@@ -3,25 +3,16 @@ import { SlideData, ProcessStep } from '../types';
 import { BaseLayout } from './BaseLayout';
 
 export class ImageProcessFlowLayout extends BaseLayout {
-  protected renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): void {
+  protected async renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): Promise<void> {
     const isBanner = this.theme.header.style === 'banner';
     const imgY = isBanner ? 1.2 : 0.9;
     const imgH = 3.0;
     const imgPath = data.imagePath ? this.imageResolver.resolveImage(data.imagePath) : null;
 
     if (imgPath) {
-      slide.addImage({
-        path: imgPath,
-        x: 1.0, y: imgY, w: 11.33, h: imgH,
-        sizing: { type: 'contain', w: 11.33, h: imgH },
-      });
+      await this.addContainedImage(slide, imgPath, 1.0, imgY, 11.33, imgH);
     } else {
-      this.addBox(slide, 1.0, imgY, 11.33, imgH);
-      slide.addText(`[Image: ${data.imagePath || 'not specified'}]`, {
-        x: 1.0, y: imgY + 1.0, w: 11.33, h: 1.0,
-        fontSize: 14, color: this.C.medium, align: 'center',
-        fontFace: this.F.body,
-      });
+      this.addImagePlaceholder(slide, 1.0, imgY, 11.33, imgH, data.imagePath);
     }
 
     const flows = (data.flows || []) as { label: string; steps: ProcessStep[] }[];
