@@ -1,0 +1,52 @@
+import { ThemeConfig } from '../types';
+
+export const monoTheme: ThemeConfig = {
+  name: 'mono',
+  colors: {
+    primary: '18181B',
+    primaryDark: '09090B',
+    primaryLight: 'F4F4F5',
+    secondary: '3F3F46',
+    secondaryLight: 'E4E4E7',
+    accent: '52525B',
+    accentLight: 'F4F4F5',
+    dark: '18181B',
+    medium: '71717A',
+    light: 'F4F4F5',
+    white: 'FFFFFF',
+    border: 'E4E4E7',
+    purple: '3F3F46',
+    purpleLight: 'F4F4F5',
+    orange: '52525B',
+    orangeLight: 'F4F4F5',
+    yellow: '71717A',
+    yellowLight: 'F4F4F5',
+    cyan: '3F3F46',
+    lightGreen: '52525B',
+    textGray: '71717A',
+    boxBorder: 'D4D4D8',
+  },
+  fonts: {
+    title: 'Georgia',
+    body: 'Arial',
+    code: 'Consolas',
+  },
+  slideWidth: 13.33,
+  slideHeight: 7.5,
+  header: {
+    style: 'minimal',
+    titlePosition: { x: 1.1, y: 0.3, w: 11.6, h: 0.6 },
+    fontSize: 24,
+  },
+  footer: {
+    style: 'line',
+  },
+  cornerLogo: {
+    path: 'assets/logo.png',
+    x: 0.35,
+    y: 0.2,
+    w: 0.62,
+    h: 0.62,
+  },
+  boxStyle: 'bordered',
+};

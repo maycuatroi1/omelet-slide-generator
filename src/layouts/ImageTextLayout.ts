@@ -28,7 +28,7 @@ export class ImageTextLayout extends BaseLayout {
       y: isBanner ? 1.5 : 1.2,
       w: isBanner ? 5.8 : 5.7,
       h: isBanner ? 5.0 : 5.2,
-      fontSize: isBanner ? 16 : 14, color: this.C.dark, paraSpaceAfter: 8,
+      fontSize: isBanner ? 16 : 16, color: this.C.dark, paraSpaceAfter: 10,
       fontFace: this.F.body, valign: 'top',
     });
   }

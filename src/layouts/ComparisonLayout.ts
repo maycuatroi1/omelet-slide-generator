@@ -35,7 +35,7 @@ export class ComparisonLayout extends BaseLayout {
         });
         slide.addText(this.makeBulletItems(col.items || []), {
           x: x + 0.2, y: topY + 0.9, w: colW - 0.4, h: colH - 1.1,
-          fontSize: 14, color: this.C.dark, paraSpaceAfter: 6,
+          fontSize: 15, color: this.C.dark, paraSpaceAfter: 7,
           fontFace: this.F.body, valign: 'top',
         });
       } else {
@@ -51,7 +51,7 @@ export class ComparisonLayout extends BaseLayout {
         });
         slide.addText(this.makeBulletItems(col.items || []), {
           x: x + 0.15, y: topY + 0.7, w: colW - 0.3, h: colH - 0.9,
-          fontSize: 14, color: this.C.dark, paraSpaceAfter: 6,
+          fontSize: 15, color: this.C.dark, paraSpaceAfter: 7,
           fontFace: this.F.body, valign: 'top',
         });
       }

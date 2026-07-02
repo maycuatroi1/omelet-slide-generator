@@ -53,5 +53,12 @@ export interface ThemeConfig {
     small: { x: number; y: number; w: number; h: number };
     large: { x: number; y: number; w: number; h: number };
   };
+  cornerLogo?: {
+    path: string;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  };
   boxStyle: BoxStyle;
 }

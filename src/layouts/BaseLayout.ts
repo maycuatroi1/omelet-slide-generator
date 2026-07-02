@@ -17,6 +17,21 @@ export abstract class BaseLayout {
     if (this.showFooter(data)) {
       this.addFooter(slide, slideNum);
     }
+    await this.addCornerLogo(slide);
+  }
+
+  protected async addCornerLogo(slide: PptxGenJS.Slide): Promise<void> {
+    const cfg = this.theme.cornerLogo;
+    if (!cfg) return;
+    const resolved = this.imageResolver.resolveImage(cfg.path);
+    if (!resolved) return;
+    const size = await this.imageResolver.getImageSize(resolved);
+    if (size) {
+      const fitted = ImageResolver.fitToBox(size.ratio, cfg.w, cfg.h);
+      slide.addImage({ path: resolved, x: cfg.x, y: cfg.y, w: fitted.w, h: fitted.h });
+    } else {
+      slide.addImage({ path: resolved, x: cfg.x, y: cfg.y, w: cfg.w, h: cfg.h });
+    }
   }
 
   protected abstract renderContent(slide: PptxGenJS.Slide, data: SlideData, slideNum: number): Promise<void> | void;
@@ -50,6 +65,17 @@ export abstract class BaseLayout {
         bold: true,
         fontFace: fonts.title,
         margin: 0,
+      });
+      const ruleY = header.titlePosition.y + header.titlePosition.h + 0.04;
+      const ruleX = header.titlePosition.x;
+      const ruleW = this.theme.slideWidth - ruleX * 2;
+      slide.addShape('line', {
+        x: ruleX, y: ruleY, w: ruleW, h: 0,
+        line: { color: colors.border, width: 1.25 },
+      });
+      slide.addShape('line', {
+        x: ruleX, y: ruleY, w: 0.7, h: 0,
+        line: { color: colors.primary, width: 3 },
       });
     }
   }
