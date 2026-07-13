@@ -14,13 +14,7 @@ export class ObjectivesLayout extends BaseLayout {
         fontFace: fonts.title, margin: 0,
       });
     } else {
-      this.addLogo(slide, true);
-      slide.addText(data.title || 'Objective & Learning Outcome', {
-        ...header.titlePosition,
-        fontSize: header.fontSize,
-        color: colors.dark, bold: true,
-        fontFace: fonts.title, margin: 0,
-      });
+      super.addHeader(slide, { ...data, title: data.title || 'Objective & Learning Outcome' });
     }
   }
 
@@ -53,73 +47,58 @@ export class ObjectivesLayout extends BaseLayout {
           fontFace: this.F.body,
         });
       });
-    } else if (details.length > 0) {
-      const objCount = items.length;
-      const outCount = details.length;
-      const gap = 0.25;
-
-      const objItemH = 0.55;
-      const objContentH = objCount * objItemH;
-      const objBoxH = objContentH + 0.6;
-      const objY = 1.0;
-
-      this.addBox(slide, 0.9, objY, 11.53, objBoxH);
-      slide.addText(data.leftTitle || 'Objective', {
-        x: 1.1, y: objY + 0.1, w: 3.0, h: 0.35,
-        fontSize: 16, color: this.C.dark, bold: true,
-        fontFace: this.F.body, valign: 'top',
-      });
-      items.forEach((item, i) => {
-        const y = objY + 0.45 + i * objItemH;
-        slide.addText(item, {
-          x: 1.4, y, w: 10.7, h: objItemH,
-          fontSize: 16, color: this.C.dark,
-          fontFace: this.F.body, valign: 'middle',
-          bullet: true,
-        });
-      });
-
-      const outY = objY + objBoxH + gap;
-      const outItemH = 0.55;
-      const outContentH = outCount * outItemH;
-      const outBoxH = outContentH + 0.6;
-
-      this.addBox(slide, 0.9, outY, 11.53, outBoxH);
-      slide.addText(data.rightTitle || 'Outcome', {
-        x: 1.1, y: outY + 0.1, w: 3.0, h: 0.35,
-        fontSize: 16, color: this.C.dark, bold: true,
-        fontFace: this.F.body, valign: 'top',
-      });
-      details.forEach((item, i) => {
-        const y = outY + 0.45 + i * outItemH;
-        slide.addText(item, {
-          x: 1.4, y, w: 10.7, h: outItemH,
-          fontSize: 16, color: this.C.dark,
-          fontFace: this.F.body, valign: 'middle',
-          bullet: true,
-        });
-      });
-    } else {
-      const count = items.length;
-      const boxY = 1.0;
-      const endY = 6.7;
-      const boxH = endY - boxY;
-      this.addBox(slide, 0.9, boxY, 11.32, boxH);
-
-      const contentStart = boxY + 0.25;
-      const contentEnd = endY - 0.15;
-      const spacing = (contentEnd - contentStart) / count;
-      const fontSize = count > 5 ? 16 : (count > 4 ? 18 : 20);
-
-      items.forEach((item, i) => {
-        const y = contentStart + i * spacing;
-        slide.addText(item, {
-          x: 1.4, y, w: 10.5, h: spacing - 0.05,
-          fontSize, color: this.C.dark,
-          fontFace: this.F.body, valign: 'middle',
-          bullet: true,
-        });
-      });
+      return;
     }
+
+    const takeaway = data.takeaway || data.caption;
+    const top = this.CY;
+    const availH = this.contentH(!!takeaway);
+    const count = items.length || 1;
+    const cols = count > 4 ? 3 : 2;
+    const rows = Math.ceil(count / cols);
+    const gap = 0.22;
+    const cardW = (this.CW - gap * (cols - 1)) / cols;
+    const cardH = (availH - gap * (rows - 1)) / rows;
+
+    items.forEach((item, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = this.CX + col * (cardW + gap);
+      const y = top + row * (cardH + gap);
+      const accent = i % 2 === 0 ? this.C.primary : this.C.accent;
+
+      this.addCard(slide, x, y, cardW, cardH, accent);
+
+      const innerW = cardW - 0.52;
+      const numH = 0.34;
+      const titleH = Math.max(0.4, this.estimateTextH(item, innerW, 17));
+      const descH = details[i] ? this.estimateTextH(details[i], innerW, 14) : 0;
+      const contentH = numH + 0.08 + titleH + (details[i] ? descH + 0.16 : 0);
+      let cursor = y + 0.2 + Math.max(0, (cardH - 0.4 - contentH) / 2);
+
+      slide.addText(`0${i + 1}`, {
+        x: x + 0.3, y: cursor, w: 0.8, h: numH,
+        fontSize: 17, color: accent, bold: true,
+        fontFace: this.F.title, margin: 0, valign: 'middle',
+      });
+      cursor += numH + 0.08;
+
+      slide.addText(this.rich(item, { fontSize: 17, color: this.C.primaryDark, bold: true }), {
+        x: x + 0.3, y: cursor, w: innerW, h: titleH,
+        fontSize: 17, color: this.C.primaryDark, bold: true,
+        fontFace: this.F.body, valign: 'top', margin: 0,
+      });
+      cursor += titleH + 0.16;
+
+      if (details[i]) {
+        slide.addText(this.rich(details[i], { fontSize: 14, color: this.C.textGray || this.C.medium }), {
+          x: x + 0.3, y: cursor, w: innerW, h: Math.min(descH + 0.2, y + cardH - cursor - 0.16),
+          fontSize: 14, color: this.C.textGray || this.C.medium,
+          fontFace: this.F.body, valign: 'top', margin: 0,
+        });
+      }
+    });
+
+    if (takeaway) this.addTakeaway(slide, takeaway);
   }
 }

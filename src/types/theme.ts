@@ -21,6 +21,12 @@ export interface Colors {
   lightGreen?: string;
   textGray?: string;
   boxBorder?: string;
+  danger?: string;
+  dangerLight?: string;
+  success?: string;
+  successLight?: string;
+  surface?: string;
+  codeBg?: string;
 }
 
 export interface Fonts {
@@ -37,6 +43,7 @@ export interface ThemeConfig {
   name: string;
   colors: Colors;
   fonts: Fonts;
+  background?: string;
   slideWidth: number;
   slideHeight: number;
   header: {

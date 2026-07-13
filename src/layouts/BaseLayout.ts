@@ -2,6 +2,11 @@ import PptxGenJS from 'pptxgenjs';
 import { ThemeConfig, SlideData } from '../types';
 import { ImageResolver } from '../services/ImageResolver';
 
+export interface TextRun {
+  text: string;
+  options: Record<string, any>;
+}
+
 export abstract class BaseLayout {
   protected theme: ThemeConfig;
   protected imageResolver: ImageResolver;
@@ -12,12 +17,19 @@ export abstract class BaseLayout {
   }
 
   async render(slide: PptxGenJS.Slide, data: SlideData, slideNum: number): Promise<void> {
+    this.addBackground(slide);
     this.addHeader(slide, data);
     await this.renderContent(slide, data, slideNum);
     if (this.showFooter(data)) {
       this.addFooter(slide, slideNum);
     }
     await this.addCornerLogo(slide);
+  }
+
+  protected addBackground(slide: PptxGenJS.Slide): void {
+    if (this.theme.background) {
+      slide.background = { color: this.theme.background };
+    }
   }
 
   protected async addCornerLogo(slide: PptxGenJS.Slide): Promise<void> {
@@ -58,24 +70,27 @@ export abstract class BaseLayout {
       });
     } else {
       this.addLogo(slide, true);
-      slide.addText(data.title || '', {
+      const title = data.title || '';
+      const fontSize = title.length > 52 ? header.fontSize - 4 : header.fontSize;
+      slide.addText(title, {
         ...header.titlePosition,
-        fontSize: header.fontSize,
-        color: colors.dark,
+        fontSize,
+        color: colors.primaryDark,
         bold: true,
         fontFace: fonts.title,
         margin: 0,
+        valign: 'middle',
       });
       const ruleY = header.titlePosition.y + header.titlePosition.h + 0.04;
       const ruleX = header.titlePosition.x;
-      const ruleW = this.theme.slideWidth - ruleX * 2;
+      const ruleW = this.theme.slideWidth - ruleX - 0.5;
       slide.addShape('line', {
         x: ruleX, y: ruleY, w: ruleW, h: 0,
         line: { color: colors.border, width: 1.25 },
       });
       slide.addShape('line', {
         x: ruleX, y: ruleY, w: 0.7, h: 0,
-        line: { color: colors.primary, width: 3 },
+        line: { color: colors.accent, width: 3 },
       });
     }
   }
@@ -85,12 +100,19 @@ export abstract class BaseLayout {
 
     if (footer.style === 'line') {
       slide.addShape('line', {
-        x: 0.2, y: 6.95, w: slideWidth - 1.0, h: 0,
+        x: 0.2, y: 6.98, w: slideWidth - 1.0, h: 0,
         line: { color: colors.border, width: 0.75 },
       });
+      if (footer.courseLabel) {
+        slide.addText(footer.courseLabel, {
+          x: 0.2, y: 7.0, w: 7.0, h: 0.32,
+          fontSize: 10, color: colors.medium, align: 'left',
+          fontFace: fonts.body, margin: 0,
+        });
+      }
       slide.addText(`${slideNum}`, {
-        x: slideWidth - 1.33, y: 6.95, w: 1.0, h: 0.4,
-        fontSize: 12, color: colors.medium, align: 'right',
+        x: slideWidth - 1.33, y: 7.0, w: 1.0, h: 0.32,
+        fontSize: 11, color: colors.medium, align: 'right',
         fontFace: fonts.body, margin: 0,
       });
     } else {
@@ -144,6 +166,17 @@ export abstract class BaseLayout {
     slide.addImage({ path: imgPath, x, y, w: fitted.w, h: fitted.h });
   }
 
+  protected async addCoverImage(
+    slide: PptxGenJS.Slide,
+    imgPath: string,
+    boxX: number, boxY: number, boxW: number, boxH: number,
+  ): Promise<void> {
+    slide.addImage({
+      path: imgPath, x: boxX, y: boxY, w: boxW, h: boxH,
+      sizing: { type: 'cover', w: boxW, h: boxH } as any,
+    });
+  }
+
   protected addImagePlaceholder(
     slide: PptxGenJS.Slide,
     x: number, y: number, w: number, h: number,
@@ -189,8 +222,8 @@ export abstract class BaseLayout {
     if (boxStyle === 'semi-transparent') {
       slide.addShape('rect', {
         x, y, w, h,
-        fill: { color: colors.white, transparency: 63 },
-        line: { color: colors.boxBorder || colors.border, width: 0.5 },
+        fill: { color: colors.surface || colors.white },
+        line: { color: colors.boxBorder || colors.border, width: 0.75 },
       });
     } else if (boxStyle === 'bordered') {
       slide.addShape('rect', {
@@ -206,11 +239,152 @@ export abstract class BaseLayout {
     }
   }
 
-  protected makeBulletItems(items: string[]): Array<{ text: string; options: { bullet: boolean; breakLine: boolean } }> {
-    return items.map((item, i) => ({
-      text: item,
-      options: { bullet: true, breakLine: i < items.length - 1 },
-    }));
+  protected addCard(
+    slide: PptxGenJS.Slide,
+    x: number, y: number, w: number, h: number,
+    accent?: string,
+    fill?: string,
+  ): void {
+    slide.addShape('rect', {
+      x, y, w, h,
+      fill: { color: fill || this.C.surface || this.C.white },
+      line: { color: this.C.boxBorder || this.C.border, width: 0.75 },
+    });
+    if (accent) {
+      slide.addShape('rect', {
+        x, y, w: 0.09, h,
+        fill: { color: accent },
+        line: { color: accent, width: 0 },
+      });
+    }
+  }
+
+  protected addEyebrow(
+    slide: PptxGenJS.Slide,
+    text: string,
+    x: number, y: number, w: number,
+    color?: string,
+  ): void {
+    slide.addText(text.toUpperCase(), {
+      x, y, w, h: 0.26,
+      fontSize: 11, bold: true, charSpacing: 1.4,
+      color: color || this.C.primary,
+      fontFace: this.F.body, margin: 0, valign: 'middle',
+    });
+  }
+
+  protected addTakeaway(slide: PptxGenJS.Slide, text: string, y = 6.24): void {
+    const x = 0.9;
+    const w = 11.53;
+    const h = 0.56;
+    slide.addShape('rect', {
+      x, y, w, h,
+      fill: { color: this.C.primaryDark },
+      line: { color: this.C.primaryDark, width: 0 },
+    });
+    slide.addShape('rect', {
+      x, y, w: 0.09, h,
+      fill: { color: this.C.accent },
+      line: { color: this.C.accent, width: 0 },
+    });
+    slide.addText(this.rich(text, { fontSize: 14, color: 'FFFFFF' }, { color: 'F2C4BE' }), {
+      x: x + 0.28, y, w: w - 0.5, h,
+      fontSize: 14, color: 'FFFFFF', fontFace: this.F.body,
+      valign: 'middle', margin: 0,
+    });
+  }
+
+  protected parseInline(text: string): Array<{ text: string; kind: 'plain' | 'bold' | 'code' }> {
+    const out: Array<{ text: string; kind: 'plain' | 'bold' | 'code' }> = [];
+    const re = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out.push({ text: text.slice(last, m.index), kind: 'plain' });
+      const tok = m[0];
+      if (tok.startsWith('**')) out.push({ text: tok.slice(2, -2), kind: 'bold' });
+      else out.push({ text: tok.slice(1, -1), kind: 'code' });
+      last = m.index + tok.length;
+    }
+    if (last < text.length) out.push({ text: text.slice(last), kind: 'plain' });
+    if (!out.length) out.push({ text, kind: 'plain' });
+    return out;
+  }
+
+  protected rich(
+    text: string,
+    base: Record<string, any> = {},
+    boldStyle: Record<string, any> = {},
+  ): TextRun[] {
+    return this.parseInline(text).map(seg => {
+      if (seg.kind === 'bold') {
+        return { text: seg.text, options: { ...base, bold: true, color: boldStyle.color || base.color, ...boldStyle } };
+      }
+      if (seg.kind === 'code') {
+        return {
+          text: seg.text,
+          options: { ...base, fontFace: this.F.code, color: this.C.primary, bold: false },
+        };
+      }
+      return { text: seg.text, options: { ...base } };
+    });
+  }
+
+  protected makeBulletItems(items: string[]): TextRun[] {
+    const runs: TextRun[] = [];
+    items.forEach((item, i) => {
+      const segs = this.parseInline(item);
+      segs.forEach((seg, j) => {
+        const first = j === 0;
+        const lastSeg = j === segs.length - 1;
+        const opts: Record<string, any> = {
+          breakLine: lastSeg && i < items.length - 1,
+        };
+        if (first) opts.bullet = true;
+        if (seg.kind === 'bold') {
+          opts.bold = true;
+          opts.color = this.C.primaryDark;
+        } else if (seg.kind === 'code') {
+          opts.fontFace = this.F.code;
+          opts.color = this.C.primary;
+        }
+        runs.push({ text: seg.text, options: opts });
+      });
+    });
+    return runs;
+  }
+
+  protected splitLead(item: string): { lead: string; rest: string } {
+    const parts = item.split(' -- ');
+    if (parts.length < 2) return { lead: item, rest: '' };
+    return { lead: parts[0], rest: parts.slice(1).join(' -- ') };
+  }
+
+  protected richLead(
+    text: string,
+    base: Record<string, any> = {},
+    boldStyle: Record<string, any> = {},
+  ): TextRun[] {
+    const { lead, rest } = this.splitLead(text);
+    if (!rest) return this.rich(text, base, boldStyle);
+    return [
+      ...this.rich(lead, { ...base, bold: true, color: this.C.primaryDark }, { color: this.C.primaryDark }),
+      { text: ' - ', options: { ...base, color: this.C.textGray || this.C.medium } },
+      ...this.rich(rest, base, boldStyle),
+    ];
+  }
+
+  protected estimateTextH(text: string, widthIn: number, fontSize: number, lineFactor = 1.3): number {
+    const charW = (fontSize * 0.5) / 72;
+    const cpl = Math.max(8, Math.floor(widthIn / charW));
+    const lines = text.split('\n').reduce((acc, l) => acc + Math.max(1, Math.ceil(l.length / cpl)), 0);
+    return (lines * fontSize * lineFactor) / 72;
+  }
+
+  protected fitSize(count: number, base: number, min: number, comfortable: number): number {
+    if (count <= comfortable) return base;
+    const step = Math.ceil((count - comfortable) / 1);
+    return Math.max(min, base - step);
   }
 
   protected makeShadow(): PptxGenJS.ShadowProps {
@@ -221,4 +395,12 @@ export abstract class BaseLayout {
   protected get H(): number { return this.theme.slideHeight; }
   protected get C(): ThemeConfig['colors'] { return this.theme.colors; }
   protected get F(): ThemeConfig['fonts'] { return this.theme.fonts; }
+
+  protected get CX(): number { return 0.9; }
+  protected get CY(): number { return 0.95; }
+  protected get CW(): number { return 11.53; }
+  protected get CB(): number { return 6.85; }
+  protected contentH(hasTakeaway: boolean): number {
+    return (hasTakeaway ? 6.14 : this.CB) - this.CY;
+  }
 }

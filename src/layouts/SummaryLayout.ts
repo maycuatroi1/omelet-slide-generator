@@ -14,53 +14,71 @@ export class SummaryLayout extends BaseLayout {
         fontFace: fonts.title, margin: 0,
       });
     } else {
-      this.addLogo(slide, true);
-      slide.addText(data.title || 'Key Takeaways', {
-        ...header.titlePosition,
-        fontSize: header.fontSize,
-        color: colors.dark, bold: true,
-        fontFace: fonts.title, margin: 0,
-      });
+      super.addHeader(slide, { ...data, title: data.title || 'Key Takeaways' });
     }
   }
 
   protected renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): void {
     const items = (data.items || []) as string[];
     const isBanner = this.theme.header.style === 'banner';
-    const count = items.length;
+    const count = items.length || 1;
 
-    const startY = isBanner ? 1.5 : 1.15;
-    const endY = 6.7;
-    const maxSpacing = isBanner ? 0.7 : 0.85;
-    const spacing = Math.min(maxSpacing, (endY - startY) / count);
-    const fontSize = count > 6 ? (isBanner ? 14 : 15) : (isBanner ? 16 : 18);
-    const itemH = spacing - 0.05;
-
-    if (!isBanner) {
-      this.addBox(slide, 0.9, 1.0, 11.53, endY - 1.0 + 0.15);
+    if (isBanner) {
+      const startY = 1.5;
+      const spacing = Math.min(0.7, (6.7 - startY) / count);
+      items.forEach((item, i) => {
+        const y = startY + i * spacing;
+        slide.addShape('ellipse', {
+          x: 0.9, y: y + 0.05, w: 0.4, h: 0.4,
+          fill: { color: this.C.secondary },
+        });
+        slide.addText(`${i + 1}`, {
+          x: 0.9, y: y + 0.05, w: 0.4, h: 0.4,
+          fontSize: 12, color: this.C.white, bold: true,
+          align: 'center', valign: 'middle', fontFace: this.F.body, margin: 0,
+        });
+        slide.addText(item, {
+          x: 1.5, y, w: 11.0, h: spacing - 0.05,
+          fontSize: count > 6 ? 14 : 16, color: this.C.dark, valign: 'middle',
+          fontFace: this.F.body,
+        });
+      });
+      return;
     }
 
-    items.forEach((item, i) => {
-      const y = startY + i * spacing;
-      const ellipseX = isBanner ? 0.9 : 1.1;
-      const textX = isBanner ? 1.5 : 1.7;
-      const ellipseSize = Math.min(0.4, itemH - 0.05);
+    const takeaway = data.takeaway || data.caption;
+    const top = this.CY;
+    const availH = this.contentH(!!takeaway);
+    const rowH = availH / count;
+    const fontSize = this.fitSize(count, 17, 12, 5);
 
-      slide.addShape('ellipse', {
-        x: ellipseX, y: y + (itemH - ellipseSize) / 2, w: ellipseSize, h: ellipseSize,
-        fill: { color: isBanner ? this.C.secondary : this.C.primary },
+    items.forEach((item, i) => {
+      const y = top + i * rowH;
+      const accent = i % 2 === 0 ? this.C.primary : this.C.accent;
+
+      slide.addShape('rect', {
+        x: this.CX, y: y + 0.04, w: 0.42, h: rowH - 0.16,
+        fill: { color: accent },
+        line: { color: accent, width: 0 },
       });
       slide.addText(`${i + 1}`, {
-        x: ellipseX, y: y + (itemH - ellipseSize) / 2, w: ellipseSize, h: ellipseSize,
-        fontSize: isBanner ? 12 : 14, color: this.C.white, bold: true,
-        align: 'center', valign: 'middle',
+        x: this.CX, y: y + 0.04, w: 0.42, h: rowH - 0.16,
+        fontSize: 14, color: 'FFFFFF', bold: true,
+        align: 'center', valign: 'middle', fontFace: this.F.title, margin: 0,
+      });
+      slide.addText(this.rich(item, { fontSize, color: this.C.dark }, { color: this.C.primaryDark }), {
+        x: this.CX + 0.58, y, w: this.CW - 0.62, h: rowH - 0.1,
+        fontSize, color: this.C.dark, valign: 'middle',
         fontFace: this.F.body, margin: 0,
       });
-      slide.addText(item, {
-        x: textX, y, w: isBanner ? 11.0 : 10.5, h: itemH,
-        fontSize, color: this.C.dark, valign: 'middle',
-        fontFace: this.F.body,
-      });
+      if (i < count - 1) {
+        slide.addShape('line', {
+          x: this.CX, y: y + rowH - 0.05, w: this.CW, h: 0,
+          line: { color: this.C.border, width: 0.75 },
+        });
+      }
     });
+
+    if (takeaway) this.addTakeaway(slide, takeaway);
   }
 }

@@ -6,7 +6,7 @@ export class TitleLayout extends BaseLayout {
   protected addHeader(_slide: PptxGenJS.Slide, _data: SlideData): void {}
   protected showFooter(): boolean { return false; }
 
-  protected renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): void {
+  protected async renderContent(slide: PptxGenJS.Slide, data: SlideData, _slideNum: number): Promise<void> {
     const { header } = this.theme;
 
     if (header.style === 'banner') {
@@ -38,34 +38,62 @@ export class TitleLayout extends BaseLayout {
           fontFace: this.F.body,
         });
       }
-    } else {
-      slide.addText(data.title || '', {
-        x: 1.67, y: 1.23, w: 10.0, h: 2.61,
-        fontSize: 44, color: '000000', bold: false, align: 'center', valign: 'bottom',
-        fontFace: this.F.title, margin: 0,
+      return;
+    }
+
+    const imgPath = data.imagePath ? this.imageResolver.resolveImage(data.imagePath) : null;
+    const textW = imgPath ? 7.4 : this.W;
+
+    if (imgPath) {
+      await this.addCoverImage(slide, imgPath, textW, 0, this.W - textW, this.H);
+      slide.addShape('rect', {
+        x: textW, y: 0, w: 0.06, h: this.H,
+        fill: { color: this.C.accent }, line: { color: this.C.accent, width: 0 },
       });
-      if (data.subtitle) {
-        slide.addText(data.subtitle, {
-          x: 1.67, y: 3.94, w: 10.0, h: 1.81,
-          fontSize: 24, color: '000000', align: 'center', valign: 'top',
-          fontFace: this.F.body,
-        });
-      }
-      if (data.author) {
-        slide.addText(data.author, {
-          x: 1.67, y: 5.5, w: 10.0, h: 0.5,
-          fontSize: 16, color: this.C.medium, align: 'center',
-          fontFace: this.F.body,
-        });
-      }
-      if (data.date) {
-        slide.addText(data.date, {
-          x: 1.67, y: 6.0, w: 10.0, h: 0.5,
-          fontSize: 14, color: this.C.medium, align: 'center',
-          fontFace: this.F.body,
-        });
-      }
-      this.addFooter(slide, 1);
+    }
+
+    this.addLogo(slide, true);
+
+    const x = 0.9;
+    const w = textW - 1.6;
+
+    const label = this.theme.footer.courseLabel;
+    if (label) {
+      slide.addText(label.toUpperCase(), {
+        x, y: 1.55, w, h: 0.3,
+        fontSize: 12, bold: true, charSpacing: 1.6, color: this.C.accent,
+        fontFace: this.F.body, margin: 0, valign: 'middle',
+      });
+    }
+
+    slide.addText(data.title || '', {
+      x, y: 2.0, w, h: 1.7,
+      fontSize: imgPath ? 38 : 44, color: this.C.primaryDark, bold: true,
+      align: 'left', valign: 'middle', fontFace: this.F.title, margin: 0,
+      lineSpacingMultiple: 1.0,
+    });
+
+    slide.addShape('line', {
+      x, y: 3.85, w: 1.2, h: 0,
+      line: { color: this.C.accent, width: 3 },
+    });
+
+    if (data.subtitle) {
+      slide.addText(this.rich(data.subtitle, { fontSize: 17, color: this.C.textGray || this.C.medium }, { color: this.C.primaryDark }), {
+        x, y: 4.1, w, h: 1.5,
+        fontSize: 17, color: this.C.textGray || this.C.medium,
+        align: 'left', valign: 'top', fontFace: this.F.body, margin: 0,
+        lineSpacingMultiple: 1.2,
+      });
+    }
+
+    const meta = [data.author, data.date].filter(Boolean).join('  |  ');
+    if (meta) {
+      slide.addText(meta, {
+        x, y: 6.3, w, h: 0.4,
+        fontSize: 13, color: this.C.medium, align: 'left',
+        fontFace: this.F.body, margin: 0, valign: 'middle',
+      });
     }
   }
 }

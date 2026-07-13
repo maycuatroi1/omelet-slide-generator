@@ -20,13 +20,7 @@ export class QnaLayout extends BaseLayout {
         fontFace: this.F.title, margin: 0,
       });
     } else {
-      this.addLogo(slide, true);
-      slide.addText(data.title || cfg.defaultTitle, {
-        ...this.theme.header.titlePosition,
-        fontSize: this.theme.header.fontSize,
-        color: this.C.dark, bold: true,
-        fontFace: this.F.title, margin: 0,
-      });
+      super.addHeader(slide, { ...data, title: data.title || cfg.defaultTitle });
     }
   }
 
@@ -57,31 +51,32 @@ export class QnaLayout extends BaseLayout {
         fontFace: this.F.title, margin: 0,
       });
 
-      slide.addText(data.subtitle || '', {
+      slide.addText(this.rich(data.subtitle || '', { fontSize: 16, color: this.C.primaryDark, bold: true }), {
         x: 1.7, y: startY + 0.25, w: 10.8, h: 0.7,
-        fontSize: 16, color: this.C.dark, valign: 'middle',
+        fontSize: 16, color: this.C.primaryDark, valign: 'middle',
         fontFace: this.F.body, bold: true,
       });
 
       const bulletY = startY + 1.2;
-      const spacing = Math.min(0.65, (6.5 - bulletY) / items.length);
+      const listH = 6.6 - bulletY;
+      const spacing = listH / Math.max(items.length, 1);
 
       items.forEach((item, i) => {
         const y = bulletY + i * spacing;
         slide.addShape('ellipse', {
-          x: 1.2, y: y + 0.12, w: 0.28, h: 0.28,
+          x: 1.2, y: y + spacing / 2 - 0.14, w: 0.28, h: 0.28,
           fill: { color: cfg.accent },
         });
         slide.addText(`${i + 1}`, {
-          x: 1.2, y: y + 0.12, w: 0.28, h: 0.28,
+          x: 1.2, y: y + spacing / 2 - 0.14, w: 0.28, h: 0.28,
           fontSize: 11, color: this.C.white, bold: true,
           align: 'center', valign: 'middle',
           fontFace: this.F.body, margin: 0,
         });
-        slide.addText(item, {
-          x: 1.65, y: y + 0.02, w: 10.85, h: spacing - 0.05,
+        slide.addText(this.rich(item, { fontSize: 15, color: this.C.dark }, { color: this.C.primaryDark }), {
+          x: 1.65, y, w: 10.85, h: spacing,
           fontSize: 15, color: this.C.dark, valign: 'middle',
-          fontFace: this.F.body,
+          fontFace: this.F.body, margin: 0,
         });
       });
     } else {

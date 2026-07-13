@@ -51,6 +51,8 @@ export interface TimelineItem {
 export interface StatItem {
   value: string;
   label: string;
+  desc?: string;
+  color?: string;
 }
 
 export interface AgendaItem {
@@ -88,6 +90,9 @@ export interface SlideData {
 
   headers?: string[];
   rows?: string[][];
+  colWidths?: number[];
+  takeaway?: string;
+  eyebrow?: string;
 
   code?: string;
   language?: string;
