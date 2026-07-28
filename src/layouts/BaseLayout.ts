@@ -82,8 +82,8 @@ export abstract class BaseLayout {
         valign: 'middle',
       });
       const ruleY = header.titlePosition.y + header.titlePosition.h + 0.04;
-      const ruleX = header.titlePosition.x;
-      const ruleW = this.theme.slideWidth - ruleX - 0.5;
+      const ruleX = this.theme.content?.x ?? header.titlePosition.x;
+      const ruleW = this.theme.content?.w ?? this.theme.slideWidth - ruleX - 0.5;
       slide.addShape('line', {
         x: ruleX, y: ruleY, w: ruleW, h: 0,
         line: { color: colors.border, width: 1.25 },
@@ -96,35 +96,39 @@ export abstract class BaseLayout {
   }
 
   protected addFooter(slide: PptxGenJS.Slide, slideNum: number): void {
-    const { footer, colors, fonts, slideWidth } = this.theme;
+    const { footer, colors, fonts, slideWidth, slideHeight } = this.theme;
+    const ruleY = slideHeight - 0.52;
+    const textY = slideHeight - 0.5;
 
     if (footer.style === 'line') {
+      const x = this.theme.content?.x ?? 0.2;
       slide.addShape('line', {
-        x: 0.2, y: 6.98, w: slideWidth - 1.0, h: 0,
+        x, y: ruleY, w: (this.theme.content?.w ?? slideWidth - 1.0), h: 0,
         line: { color: colors.border, width: 0.75 },
       });
       if (footer.courseLabel) {
         slide.addText(footer.courseLabel, {
-          x: 0.2, y: 7.0, w: 7.0, h: 0.32,
+          x, y: textY, w: 7.0, h: 0.32,
           fontSize: 10, color: colors.medium, align: 'left',
           fontFace: fonts.body, margin: 0,
         });
       }
+      const numRight = this.theme.content ? x + this.CW : slideWidth - 0.33;
       slide.addText(`${slideNum}`, {
-        x: slideWidth - 1.33, y: 7.0, w: 1.0, h: 0.32,
+        x: numRight - 1.0, y: textY, w: 1.0, h: 0.32,
         fontSize: 11, color: colors.medium, align: 'right',
         fontFace: fonts.body, margin: 0,
       });
     } else {
       if (footer.courseLabel) {
         slide.addText(footer.courseLabel, {
-          x: 0.6, y: 7.0, w: 5.0, h: 0.3,
+          x: 0.6, y: textY, w: 5.0, h: 0.3,
           fontSize: 9, color: colors.medium, align: 'left',
           fontFace: fonts.body, margin: 0,
         });
       }
       slide.addText(`${slideNum}`, {
-        x: 11.0, y: 7.0, w: 1.73, h: 0.3,
+        x: slideWidth - 2.33, y: textY, w: 1.73, h: 0.3,
         fontSize: 9, color: colors.medium, align: 'right',
         fontFace: fonts.body, margin: 0,
       });
@@ -273,9 +277,9 @@ export abstract class BaseLayout {
     });
   }
 
-  protected addTakeaway(slide: PptxGenJS.Slide, text: string, y = 6.24): void {
-    const x = 0.9;
-    const w = 11.53;
+  protected addTakeaway(slide: PptxGenJS.Slide, text: string, y = this.TY): void {
+    const x = this.CX;
+    const w = this.CW;
     const h = 0.56;
     slide.addShape('rect', {
       x, y, w, h,
@@ -381,6 +385,48 @@ export abstract class BaseLayout {
     return (lines * fontSize * lineFactor) / 72;
   }
 
+  protected estimateBoldH(text: string, widthIn: number, fontSize: number, lineFactor = 1.26): number {
+    return this.estimateTextH(text, widthIn * 0.86, fontSize, lineFactor);
+  }
+
+  protected fitRows(
+    items: string[],
+    widthIn: number,
+    availH: number,
+    baseSize: number,
+    minSize: number,
+  ): { fontSize: number; descSize: number; rows: { y: number; h: number; leadH: number }[] } {
+    const safeW = widthIn * 0.94;
+    const measure = (size: number) => {
+      const dSize = Math.max(minSize, size - 3);
+      return items.map(it => {
+        const { lead, rest } = this.splitLead(it);
+        if (!rest) {
+          return { leadH: 0, h: this.estimateTextH(it, safeW, size, 1.32) + 0.2 };
+        }
+        const leadH = this.estimateBoldH(lead, safeW, size) + 0.07;
+        return { leadH, h: leadH + this.estimateTextH(rest, safeW, dSize, 1.28) + 0.22 };
+      });
+    };
+
+    let fontSize = baseSize;
+    let parts = measure(fontSize);
+    while (fontSize > minSize && parts.reduce((a, p) => a + p.h, 0) > availH) {
+      fontSize -= 1;
+      parts = measure(fontSize);
+    }
+
+    const total = parts.reduce((a, p) => a + p.h, 0) || 1;
+    const scale = Math.max(1, availH / total);
+    let y = 0;
+    const rows = parts.map(p => {
+      const row = { y, h: p.h * scale, leadH: p.leadH };
+      y += row.h;
+      return row;
+    });
+    return { fontSize, descSize: Math.max(minSize, fontSize - 3), rows };
+  }
+
   protected fitSize(count: number, base: number, min: number, comfortable: number): number {
     if (count <= comfortable) return base;
     const step = Math.ceil((count - comfortable) / 1);
@@ -396,11 +442,12 @@ export abstract class BaseLayout {
   protected get C(): ThemeConfig['colors'] { return this.theme.colors; }
   protected get F(): ThemeConfig['fonts'] { return this.theme.fonts; }
 
-  protected get CX(): number { return 0.9; }
-  protected get CY(): number { return 0.95; }
-  protected get CW(): number { return 11.53; }
-  protected get CB(): number { return 6.85; }
+  protected get CX(): number { return this.theme.content?.x ?? 0.9; }
+  protected get CY(): number { return this.theme.content?.y ?? 0.95; }
+  protected get CW(): number { return this.theme.content?.w ?? 11.53; }
+  protected get CB(): number { return this.theme.content?.bottom ?? 6.85; }
+  protected get TY(): number { return this.theme.content?.takeawayY ?? 6.24; }
   protected contentH(hasTakeaway: boolean): number {
-    return (hasTakeaway ? 6.14 : this.CB) - this.CY;
+    return (hasTakeaway ? this.TY - 0.1 : this.CB) - this.CY;
   }
 }

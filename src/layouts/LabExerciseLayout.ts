@@ -67,7 +67,7 @@ export class LabExerciseLayout extends BaseLayout {
     const stepsBoxH = boxPadTop + labelH + steps.length * itemH + boxPadBot;
 
     if (!isBanner) {
-      this.addBox(slide, 0.9, stepsBoxY, 11.53, stepsBoxH);
+      this.addBox(slide, this.CX, stepsBoxY, this.CW, stepsBoxH);
     }
 
     const stepsLabelY = stepsBoxY + boxPadTop;
@@ -105,7 +105,7 @@ export class LabExerciseLayout extends BaseLayout {
       const verifyBoxH = boxPadTop + labelH + verify.length * itemH + boxPadBot;
 
       if (!isBanner) {
-        this.addBox(slide, 0.9, verifyBoxY, 11.53, verifyBoxH);
+        this.addBox(slide, this.CX, verifyBoxY, this.CW, verifyBoxH);
       }
 
       const verifyLabelY = verifyBoxY + boxPadTop;

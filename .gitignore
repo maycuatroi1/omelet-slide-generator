@@ -5,3 +5,7 @@ dist/
 .env
 *.pptx
 ~$*
+
+.claude/settings.local.json
+.claude/skills/.learned/
+.claude/cli-suggestions/

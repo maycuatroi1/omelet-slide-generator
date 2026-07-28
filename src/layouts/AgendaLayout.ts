@@ -48,27 +48,28 @@ export class AgendaLayout extends BaseLayout {
         });
         slide.addShape('rect', { x: 0.8, y, w: 0.15, h: 0.7, fill: { color } });
       } else {
-        this.addBox(slide, 0.9, y, 11.53, 0.7);
-        slide.addShape('rect', { x: 0.9, y, w: 0.12, h: 0.7, fill: { color } });
+        this.addBox(slide, this.CX, y, this.CW, 0.7);
+        slide.addShape('rect', { x: this.CX, y, w: 0.12, h: 0.7, fill: { color } });
       }
 
       slide.addText(item.time || '', {
-        x: isBanner ? 1.1 : 1.2, y, w: 2.0, h: 0.7,
+        x: isBanner ? 1.1 : this.CX + 0.3, y, w: 2.0, h: 0.7,
         fontSize: 14, color: this.C.dark, bold: true, valign: 'middle',
         fontFace: this.F.code, margin: 0,
       });
 
       slide.addText(item.label || '', {
-        x: 3.3, y, w: 7.0, h: 0.7,
+        x: isBanner ? 3.3 : this.CX + 2.4, y, w: this.CW - 4.6, h: 0.7,
         fontSize: 16, color: this.C.dark, valign: 'middle',
         fontFace: this.F.body,
       });
 
-      this.roundedRect(slide, 10.5, y + 0.15, 1.8, 0.4, {
+      const pillX = isBanner ? 10.5 : this.CX + this.CW - 1.95;
+      this.roundedRect(slide, pillX, y + 0.15, 1.8, 0.4, {
         fill: { color }, rectRadius: 0.2,
       });
       slide.addText((item.type || '').toUpperCase(), {
-        x: 10.5, y: y + 0.15, w: 1.8, h: 0.4,
+        x: pillX, y: y + 0.15, w: 1.8, h: 0.4,
         fontSize: 10, color: this.C.white, bold: true,
         align: 'center', valign: 'middle',
         fontFace: this.F.body, margin: 0,

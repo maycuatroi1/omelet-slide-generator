@@ -33,53 +33,73 @@ export class QnaLayout extends BaseLayout {
     };
     const cfg = configs[qnaType] || configs.qna;
     const isBanner = this.theme.header.style === 'banner';
-    const startY = isBanner ? 1.5 : 1.2;
+    const startY = isBanner ? 1.5 : this.CY;
     const items = (data.items || []) as string[];
     const hasItems = items.length > 0;
 
-    this.addBox(slide, 0.5, startY, 12.33, 6.7 - startY);
-
     if (hasItems) {
-      slide.addShape('ellipse', {
-        x: 0.8, y: startY + 0.25, w: 0.7, h: 0.7,
-        fill: { color: cfg.accent },
-      });
-      slide.addText(cfg.icon, {
-        x: 0.8, y: startY + 0.25, w: 0.7, h: 0.7,
-        fontSize: 24, color: this.C.white, bold: true,
-        align: 'center', valign: 'middle',
-        fontFace: this.F.title, margin: 0,
-      });
+      const boxX = isBanner ? 0.5 : this.CX;
+      const boxW = isBanner ? 12.33 : this.CW;
+      const bottom = isBanner ? 6.7 : this.CB;
+      let cursor = startY;
 
-      slide.addText(this.rich(data.subtitle || '', { fontSize: 16, color: this.C.primaryDark, bold: true }), {
-        x: 1.7, y: startY + 0.25, w: 10.8, h: 0.7,
-        fontSize: 16, color: this.C.primaryDark, valign: 'middle',
-        fontFace: this.F.body, bold: true,
-      });
+      if (data.subtitle) {
+        slide.addShape('rect', {
+          x: boxX, y: cursor, w: 0.5, h: 0.5,
+          fill: { color: cfg.accent }, line: { color: cfg.accent, width: 0 },
+        });
+        slide.addText(cfg.icon, {
+          x: boxX, y: cursor, w: 0.5, h: 0.5,
+          fontSize: 20, color: this.C.white, bold: true,
+          align: 'center', valign: 'middle', fontFace: this.F.title, margin: 0,
+        });
+        slide.addText(this.rich(data.subtitle, { fontSize: 18, color: this.C.primaryDark, bold: true }), {
+          x: boxX + 0.72, y: cursor, w: boxW - 0.72, h: 0.5,
+          fontSize: 18, color: this.C.primaryDark, valign: 'middle',
+          fontFace: this.F.body, bold: true, margin: 0,
+        });
+        cursor += 0.72;
+      }
 
-      const bulletY = startY + 1.2;
-      const listH = 6.6 - bulletY;
-      const spacing = listH / Math.max(items.length, 1);
+      const innerW = boxW - 0.62;
+      const { fontSize, descSize, rows } = this.fitRows(items, innerW, bottom - cursor, 18, 14);
 
       items.forEach((item, i) => {
-        const y = bulletY + i * spacing;
-        slide.addShape('ellipse', {
-          x: 1.2, y: y + spacing / 2 - 0.14, w: 0.28, h: 0.28,
-          fill: { color: cfg.accent },
+        const { y: dy, h: rowH, leadH } = rows[i];
+        const y = cursor + dy;
+        const { lead, rest } = this.splitLead(item);
+        slide.addText(String(i + 1).padStart(2, '0'), {
+          x: boxX, y: y + 0.02, w: 0.5, h: 0.3,
+          fontSize: 13, color: cfg.accent, bold: true,
+          align: 'left', valign: 'top', fontFace: this.F.title, margin: 0,
         });
-        slide.addText(`${i + 1}`, {
-          x: 1.2, y: y + spacing / 2 - 0.14, w: 0.28, h: 0.28,
-          fontSize: 11, color: this.C.white, bold: true,
-          align: 'center', valign: 'middle',
-          fontFace: this.F.body, margin: 0,
-        });
-        slide.addText(this.rich(item, { fontSize: 15, color: this.C.dark }, { color: this.C.primaryDark }), {
-          x: 1.65, y, w: 10.85, h: spacing,
-          fontSize: 15, color: this.C.dark, valign: 'middle',
-          fontFace: this.F.body, margin: 0,
-        });
+        if (rest) {
+          slide.addText(this.rich(lead, { fontSize, color: this.C.primaryDark, bold: true }), {
+            x: boxX + 0.52, y, w: innerW, h: leadH,
+            fontSize, color: this.C.primaryDark, bold: true,
+            fontFace: this.F.body, valign: 'top', margin: 0,
+          });
+          slide.addText(this.rich(rest, { fontSize: descSize, color: this.C.textGray || this.C.medium }), {
+            x: boxX + 0.52, y: y + leadH, w: innerW, h: rowH - leadH - 0.08,
+            fontSize: descSize, color: this.C.textGray || this.C.medium,
+            fontFace: this.F.body, valign: 'top', margin: 0,
+          });
+        } else {
+          slide.addText(this.rich(item, { fontSize, color: this.C.dark }, { color: this.C.accent }), {
+            x: boxX + 0.52, y, w: innerW, h: rowH - 0.06,
+            fontSize, color: this.C.dark, valign: 'top',
+            fontFace: this.F.body, margin: 0,
+          });
+        }
+        if (i < items.length - 1) {
+          slide.addShape('line', {
+            x: boxX, y: y + rowH - 0.04, w: boxW, h: 0,
+            line: { color: this.C.border, width: 0.75 },
+          });
+        }
       });
     } else {
+      this.addBox(slide, 0.5, startY, 12.33, 6.7 - startY);
       slide.addShape('ellipse', {
         x: 5.77, y: startY + 0.4, w: 1.8, h: 1.8,
         fill: { color: cfg.accent },

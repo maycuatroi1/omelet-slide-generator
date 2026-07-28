@@ -63,7 +63,7 @@ export class MathLayout extends BaseLayout {
       const varStartY = Math.max(currentY + 0.1, formulaEndY);
       const varBoxH = hasDesc ? 2.0 : 6.7 - varStartY;
 
-      this.addBox(slide, 0.9, varStartY, 11.53, varBoxH);
+      this.addBox(slide, this.CX, varStartY, this.CW, varBoxH);
 
       slide.addText('Where:', {
         x: 1.2, y: varStartY + 0.1, w: 2.0, h: 0.35,

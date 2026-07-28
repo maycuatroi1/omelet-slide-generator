@@ -54,8 +54,8 @@ export class TitleLayout extends BaseLayout {
 
     this.addLogo(slide, true);
 
-    const x = 0.9;
-    const w = textW - 1.6;
+    const x = this.CX;
+    const w = textW - x - 0.7;
 
     const label = this.theme.footer.courseLabel;
     if (label) {

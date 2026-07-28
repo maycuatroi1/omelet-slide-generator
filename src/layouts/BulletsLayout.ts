@@ -46,37 +46,34 @@ export class BulletsLayout extends BaseLayout {
     }
 
     const count = items.length || 1;
-    const rowH = Math.min(1.15, availH / count);
-    const usedH = rowH * count;
-    const startY = top + (availH - usedH) / 2;
-    const fontSize = this.fitSize(count, 19, 14, 5);
-    const descSize = fontSize - 3;
+    const innerW = textW - 0.4;
+    const { fontSize, descSize, rows } = this.fitRows(items, innerW, availH, 19, 14);
 
     items.forEach((item, i) => {
-      const y = startY + i * rowH;
-      const [lead, ...restParts] = item.split(' -- ');
-      const rest = restParts.join(' -- ');
+      const { y: dy, h: rowH, leadH } = rows[i];
+      const y = top + dy;
+      const { lead, rest } = this.splitLead(item);
 
       slide.addShape('rect', {
-        x: this.CX, y: y + rowH / 2 - 0.09, w: 0.18, h: 0.18,
+        x: this.CX, y: rest ? y + 0.16 : y + rowH / 2 - 0.09, w: 0.18, h: 0.18,
         fill: { color: i % 2 === 0 ? this.C.primary : this.C.accent },
         line: { color: i % 2 === 0 ? this.C.primary : this.C.accent, width: 0 },
       });
 
       if (rest) {
         slide.addText(this.rich(lead, { fontSize, color: this.C.primaryDark, bold: true }), {
-          x: this.CX + 0.36, y: y + 0.04, w: textW - 0.4, h: rowH * 0.48,
+          x: this.CX + 0.36, y: y + 0.04, w: innerW, h: leadH,
           fontSize, color: this.C.primaryDark, bold: true,
-          fontFace: this.F.body, valign: 'middle', margin: 0,
+          fontFace: this.F.body, valign: 'top', margin: 0,
         });
         slide.addText(this.rich(rest, { fontSize: descSize, color: this.C.textGray || this.C.medium }), {
-          x: this.CX + 0.36, y: y + rowH * 0.46, w: textW - 0.4, h: rowH * 0.5,
+          x: this.CX + 0.36, y: y + 0.04 + leadH, w: innerW, h: rowH - leadH - 0.1,
           fontSize: descSize, color: this.C.textGray || this.C.medium,
           fontFace: this.F.body, valign: 'top', margin: 0,
         });
       } else {
         slide.addText(this.rich(item, { fontSize, color: this.C.dark }), {
-          x: this.CX + 0.36, y, w: textW - 0.4, h: rowH,
+          x: this.CX + 0.36, y, w: innerW, h: rowH - 0.06,
           fontSize, color: this.C.dark,
           fontFace: this.F.body, valign: 'middle', margin: 0,
         });

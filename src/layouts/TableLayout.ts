@@ -22,7 +22,7 @@ export class TableLayout extends BaseLayout {
       tableY += 0.46;
     }
 
-    const bottom = takeaway && !isBanner ? 6.14 : 6.85;
+    const bottom = takeaway && !isBanner ? this.TY - 0.1 : this.CB;
     const maxH = bottom - tableY;
     const rowH = Math.max(0.36, Math.min(0.95, maxH / Math.max(totalRows, 1)));
     const fontSize = totalRows > 8 ? 12 : totalRows > 6 ? 13 : 15;

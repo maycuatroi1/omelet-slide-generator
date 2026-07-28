@@ -67,5 +67,12 @@ export interface ThemeConfig {
     w: number;
     h: number;
   };
+  content?: {
+    x?: number;
+    y?: number;
+    w?: number;
+    bottom?: number;
+    takeawayY?: number;
+  };
   boxStyle: BoxStyle;
 }
