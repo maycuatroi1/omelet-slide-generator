@@ -28,6 +28,8 @@ import { MathLayout } from './MathLayout';
 import { ImageTableLayout } from './ImageTableLayout';
 import { RecapLayout } from './RecapLayout';
 import { ImageProcessFlowLayout } from './ImageProcessFlowLayout';
+import { ServiceOfferingLayout } from './ServiceOfferingLayout';
+import { LayeredFlowLayout } from './LayeredFlowLayout';
 
 type LayoutConstructor = new (theme: ThemeConfig, imageResolver: ImageResolver) => BaseLayout;
 
@@ -59,6 +61,8 @@ const LAYOUT_MAP: Record<LayoutName, LayoutConstructor> = {
   imageTable: ImageTableLayout,
   recap: RecapLayout,
   imageProcessFlow: ImageProcessFlowLayout,
+  serviceOffering: ServiceOfferingLayout,
+  layeredFlow: LayeredFlowLayout,
 };
 
 export class LayoutRegistry {
@@ -113,3 +117,5 @@ export { MathLayout } from './MathLayout';
 export { ImageTableLayout } from './ImageTableLayout';
 export { RecapLayout } from './RecapLayout';
 export { ImageProcessFlowLayout } from './ImageProcessFlowLayout';
+export { ServiceOfferingLayout } from './ServiceOfferingLayout';
+export { LayeredFlowLayout } from './LayeredFlowLayout';
