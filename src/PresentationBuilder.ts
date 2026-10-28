@@ -2,6 +2,7 @@ import PptxGenJS from 'pptxgenjs';
 import { ThemeConfig, ContentModule, LayoutName } from './types';
 import { LayoutRegistry } from './layouts';
 import { ImageResolver } from './services/ImageResolver';
+import { SlideMotion } from './services/MotionPostProcessor';
 
 export interface BuildOptions {
   noNotes?: boolean;
@@ -11,6 +12,7 @@ export interface BuildOptions {
 export class PresentationBuilder {
   private theme: ThemeConfig;
   private layoutRegistry: LayoutRegistry;
+  private motion: SlideMotion[] = [];
 
   constructor(theme: ThemeConfig, contentDir: string = '.') {
     this.theme = theme;
@@ -34,6 +36,7 @@ export class PresentationBuilder {
     }
 
     const slides = content.slides || [];
+    this.motion = [];
     let slideNum = 0;
     let errors = 0;
 
@@ -57,6 +60,10 @@ export class PresentationBuilder {
 
       slideNum++;
       const slide = pptx.addSlide();
+      this.motion.push({
+        transition: data.transition ?? content.transition ?? 'none',
+        animate: data.animate ?? content.animate ?? false,
+      });
 
       try {
         await layout.render(slide, data, slideNum);
@@ -72,5 +79,9 @@ export class PresentationBuilder {
 
     console.log(`Built: ${slideNum} slides, ${errors} errors (theme: ${this.theme.name})`);
     return pptx;
+  }
+
+  getSlideMotion(): SlideMotion[] {
+    return this.motion;
   }
 }

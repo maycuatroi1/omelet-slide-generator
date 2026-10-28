@@ -5,6 +5,7 @@ import { PresentationBuilder } from './PresentationBuilder';
 import { getTheme } from './themes';
 import { MathService } from './services/MathService';
 import { MathPostProcessor } from './services/MathPostProcessor';
+import { MotionPostProcessor } from './services/MotionPostProcessor';
 
 const USAGE = `omelet-slide — generate .pptx from a TypeScript/JavaScript content file
 
@@ -12,7 +13,7 @@ Usage:
   omelet-slide <content-file> <output.pptx> [options]
 
 Options:
-  --theme=<name>     Theme: n8n | minimalism | midnight (default: n8n)
+  --theme=<name>     Theme: n8n | minimalism | midnight | mono | fpt-mono (default: n8n)
   --no-notes         Build student variant (omit speaker notes)
   -h, --help         Show this help
 
@@ -83,6 +84,11 @@ async function main(): Promise<void> {
   const mathCount = await MathPostProcessor.process(outputPath);
   if (mathCount > 0) {
     console.log(`Injected ${mathCount} native OMML formula(s)`);
+  }
+
+  const motion = await MotionPostProcessor.process(outputPath, builder.getSlideMotion(), theme);
+  if (motion.transitions > 0 || motion.animated > 0) {
+    console.log(`Added ${motion.transitions} slide transition(s), ${motion.animated} animated slide(s)`);
   }
 
   const variant = noNotes ? 'student' : 'instructor';
