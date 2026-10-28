@@ -216,6 +216,23 @@ The `math` layout (and inline `$...$` in text) is rendered as **native PowerPoin
 { layout: 'math', title: 'Master theorem', formula: 'T(n) = aT(n/b) + f(n)' }
 ```
 
+## Transitions and animation
+
+Set `transition` (`fade`, `push`, `wipe` or `none`) and `animate` on the content module for the whole deck, or on a slide to override it:
+
+```ts
+const content: ContentModule = {
+  transition: 'fade',
+  animate: true,
+  slides: [
+    { layout: 'title', title: 'Kickoff', animate: false },
+    { layout: 'numberedCards', title: 'Plan', transition: 'push', items: [ /* ... */ ] },
+  ],
+};
+```
+
+`animate` fades in the shapes inside the theme's content box when the slide starts, row by row (a card and the text inside it come in together). The header, footer and tables stay in place. Like math, this is a post-processing pass on the written `.pptx`; PowerPoint and Keynote play it, and it is lost in PDF.
+
 ## Code highlighting
 
 `codeBlock` uses [Shiki](https://shiki.style/) with the same themes shipped with VS Code. Pass `language` (e.g. `'ts'`, `'py'`, `'rust'`) and `code` as a string.

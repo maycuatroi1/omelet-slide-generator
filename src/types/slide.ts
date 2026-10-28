@@ -27,6 +27,8 @@ export type LayoutName =
   | 'recap'
   | 'imageProcessFlow';
 
+export type SlideTransition = 'fade' | 'push' | 'wipe' | 'none';
+
 export interface IconGridItem {
   icon?: string;
   label: string;
@@ -72,6 +74,8 @@ export interface SlideData {
   title?: string;
   subtitle?: string;
   notes?: string;
+  transition?: SlideTransition;
+  animate?: boolean;
 
   author?: string;
   date?: string;
@@ -124,6 +128,8 @@ export interface ContentModule {
   author?: string;
   subject?: string;
   courseLabel?: string;
+  transition?: SlideTransition;
+  animate?: boolean;
   slides: SlideData[];
   meta?: {
     title?: string;
