@@ -25,7 +25,33 @@ export type LayoutName =
   | 'math'
   | 'imageTable'
   | 'recap'
-  | 'imageProcessFlow';
+  | 'imageProcessFlow'
+  | 'serviceOffering'
+  | 'layeredFlow';
+
+export interface ServiceOfferingData {
+  outcome: string;
+  audience: string;
+  problem: string;
+  sources: string[];
+  steps: ProcessStep[];
+  deliverables: ProcessStep[];
+  metrics: { label: string; detail: string }[];
+  boundary?: string;
+  labels?: {
+    problem?: string;
+    sources?: string;
+    workflow?: string;
+    deliverables?: string;
+  };
+}
+
+export interface FlowLane {
+  label: string;
+  subtitle?: string;
+  emphasis?: boolean;
+  items: ProcessStep[];
+}
 
 export type SlideTransition = 'fade' | 'push' | 'wipe' | 'none';
 
@@ -123,6 +149,8 @@ export interface SlideData {
   verify?: string[];
 
   flows?: { label: string; steps: ProcessStep[] }[];
+  service?: ServiceOfferingData;
+  lanes?: FlowLane[];
 }
 
 export interface ContentModule {

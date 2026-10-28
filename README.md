@@ -70,6 +70,37 @@ omelet-slide slides/index.ts handout.pptx --no-notes         # student variant
 
 ## Writing a content file
 
+### Service and evidence diagrams
+
+Two additional native, editable layouts support service offerings and cross-system workflows:
+
+| Layout | Required data | Composition |
+|---|---|---|
+| `serviceOffering` | `service` | Situation and inputs, numbered execution, deliverables and a measurement strip |
+| `layeredFlow` | `lanes` | Two to four horizontal layers with labeled items and downward connectors |
+
+`serviceOffering` accepts `outcome`, `audience`, `problem`, `sources` (1-4 strings), `steps` (1-5),
+`deliverables` (1-4), and `metrics` (1-4). Steps and deliverables use `{title, desc?}`;
+metrics use `{label, detail}`. Optional `boundary` adds a scope note. Optional `labels` localizes
+`problem`, `sources`, `workflow` and `deliverables`. Keep headings to one short line and descriptions
+to two or three lines; the layout rejects oversized item counts rather than dropping content.
+
+`layeredFlow` uses `lanes: [{label, subtitle?, emphasis?, items: [{title, desc?}]}]`.
+Each lane holds one to four items. Use two or three lanes for descriptions and four for terse labels.
+An emphasized lane uses the theme's dark surface. `description` and `takeaway` are optional.
+All content uses native PowerPoint text and shapes and follows the selected theme's geometry and colors.
+
+```ts
+{ layout: 'layeredFlow', title: 'Evidence workflow', lanes: [
+  { label: 'Inputs', items: [{ title: 'Requests', desc: 'Messages and tickets' }] },
+  { label: 'Work', emphasis: true, items: [{ title: 'Confirm and act', desc: 'An owner approves the next action' }] },
+  { label: 'Outputs', items: [{ title: 'Verified result', desc: 'Acceptance evidence and cost' }] },
+] }
+```
+
+Run `npm test` to build and check the layouts across all built-in themes, including native text,
+shape bounds, retained content and invalid-data handling.
+
 A content file exports a single `ContentModule` as `default`.
 
 `slides/index.ts`:
