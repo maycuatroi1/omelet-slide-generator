@@ -52,6 +52,15 @@ export class ImageResolver {
     }
   }
 
+  async toPngDataUri(filePath: string): Promise<string | null> {
+    try {
+      const png = await sharp(filePath).png().toBuffer();
+      return `data:image/png;base64,${png.toString('base64')}`;
+    } catch {
+      return null;
+    }
+  }
+
   getCachedSize(filePath: string): ImageSize | null {
     return sizeCache.get(filePath) || null;
   }
