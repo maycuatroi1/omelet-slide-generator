@@ -91,7 +91,7 @@ export class ImageLayout extends BaseLayout {
       return;
     }
 
-    const label = (data.description || 'Read the diagram').toUpperCase();
+    const label = data.description ? data.description.toUpperCase() : '';
 
     if (stacked) {
       const noteTop = top + imgColH + 0.22;
@@ -124,7 +124,6 @@ export class ImageLayout extends BaseLayout {
           fontFace: this.F.body, margin: 0,
         });
       });
-      void label;
       if (takeaway) this.addTakeaway(slide, takeaway);
       return;
     }
@@ -133,14 +132,16 @@ export class ImageLayout extends BaseLayout {
     const noteW = this.CW - imgColW - 0.26;
     this.addCard(slide, noteX, top, noteW, availH, this.C.accent);
 
-    slide.addText(label, {
-      x: noteX + 0.24, y: top + 0.18, w: noteW - 0.44, h: 0.3,
-      fontSize: 11, bold: true, charSpacing: 1.2, color: this.C.accent,
-      fontFace: this.F.body, margin: 0, valign: 'middle',
-    });
+    if (label) {
+      slide.addText(label, {
+        x: noteX + 0.24, y: top + 0.18, w: noteW - 0.44, h: 0.3,
+        fontSize: 11, bold: true, charSpacing: 1.2, color: this.C.accent,
+        fontFace: this.F.body, margin: 0, valign: 'middle',
+      });
+    }
 
-    const listTop = top + 0.58;
-    const listH = availH - 0.72;
+    const listTop = top + (label ? 0.58 : 0.24);
+    const listH = availH - (label ? 0.72 : 0.38);
     const rowH = listH / Math.max(items.length, 1);
     const fontSize = this.fitSize(items.length, 14, 11, 4);
 
