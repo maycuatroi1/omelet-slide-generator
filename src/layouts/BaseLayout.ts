@@ -170,6 +170,24 @@ export abstract class BaseLayout {
     slide.addImage({ path: imgPath, x, y, w: fitted.w, h: fitted.h });
   }
 
+  protected async addVideo(
+    slide: PptxGenJS.Slide,
+    data: SlideData,
+    posterPath: string | null,
+    x: number, y: number, w: number, h: number,
+  ): Promise<boolean> {
+    const cover = posterPath ? await this.imageResolver.toPngDataUri(posterPath) : null;
+    const media = { x, y, w, h, ...(cover ? { cover } : {}) };
+    if (data.videoLink) {
+      slide.addMedia({ type: 'online', link: data.videoLink, ...media });
+      return true;
+    }
+    const video = data.videoPath ? this.imageResolver.resolveImage(data.videoPath) : null;
+    if (!video) return false;
+    slide.addMedia({ type: 'video', path: video, ...media });
+    return true;
+  }
+
   protected async addCoverImage(
     slide: PptxGenJS.Slide,
     imgPath: string,

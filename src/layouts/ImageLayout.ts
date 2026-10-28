@@ -8,10 +8,15 @@ export class ImageLayout extends BaseLayout {
     const isBanner = this.theme.header.style === 'banner';
     const items = (data.items as string[] | undefined)?.filter((it) => typeof it === 'string') || [];
     const imgPath = data.imagePath ? this.imageResolver.resolveImage(data.imagePath) : null;
+    const hasVideo = !!(data.videoLink || data.videoPath);
 
     if (isBanner) {
       const imgH = items.length ? 3.6 : 5.4;
-      if (imgPath) await this.addContainedImage(slide, imgPath, 0.7, 1.3, 11.93, imgH);
+      if (hasVideo) {
+        const size = imgPath ? await this.imageResolver.getImageSize(imgPath) : null;
+        const fitted = ImageResolver.fitToBox(size ? size.ratio : 16 / 9, 11.93, imgH);
+        await this.addVideo(slide, data, imgPath, 0.7 + (11.93 - fitted.w) / 2, 1.3 + (imgH - fitted.h) / 2, fitted.w, fitted.h);
+      } else if (imgPath) await this.addContainedImage(slide, imgPath, 0.7, 1.3, 11.93, imgH);
       else this.addImagePlaceholder(slide, 0.7, 1.3, 11.93, imgH, data.imagePath);
       if (data.caption) {
         slide.addText(data.caption, {
@@ -38,7 +43,7 @@ export class ImageLayout extends BaseLayout {
     const pad = 0.1;
 
     const size = imgPath ? await this.imageResolver.getImageSize(imgPath) : null;
-    const ratio = size ? size.ratio : 1.6;
+    const ratio = size ? size.ratio : hasVideo ? 16 / 9 : 1.6;
     const stacked = hasNotes && ratio > 2.4;
 
     const imgColW = !hasNotes || stacked ? this.CW : 7.9;
@@ -51,7 +56,7 @@ export class ImageLayout extends BaseLayout {
     let cardH = boxH;
     let cardX = this.CX;
     let cardY = top;
-    if (size) {
+    if (size || hasVideo) {
       const fitted = ImageResolver.fitToBox(ratio, imgColW - pad * 2, boxH - pad * 2);
       cardW = fitted.w + pad * 2;
       cardH = fitted.h + pad * 2;
@@ -65,9 +70,11 @@ export class ImageLayout extends BaseLayout {
       line: { color: this.C.boxBorder || this.C.border, width: 0.75 },
     });
 
-    if (imgPath) {
+    const placedVideo = hasVideo
+      && await this.addVideo(slide, data, imgPath, cardX + pad, cardY + pad, cardW - pad * 2, cardH - pad * 2);
+    if (!placedVideo && imgPath) {
       await this.addContainedImage(slide, imgPath, cardX + pad, cardY + pad, cardW - pad * 2, cardH - pad * 2);
-    } else {
+    } else if (!placedVideo) {
       this.addImagePlaceholder(slide, cardX + pad, cardY + pad, cardW - pad * 2, cardH - pad * 2, data.imagePath);
     }
 

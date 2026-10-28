@@ -247,6 +247,16 @@ Place images alongside your content file (or in subfolders). Reference them by p
 
 The CLI sets `CONTENT_DIR` to the content file's directory, so relative paths resolve from there.
 
+### Video
+
+The `image` layout embeds a video in place of the image: `videoPath` for a local `.mp4` (resolved like images) or `videoLink` for an online embed such as `https://www.youtube.com/embed/<id>`. `imagePath` becomes the poster shown before playback and sets the frame's aspect ratio, so give it a frame of the video; without it the frame is 16:9 with PowerPoint's default cover.
+
+```ts
+{ layout: 'image', title: 'Demo', imagePath: 'assets/demo-poster.png', videoPath: 'assets/demo.mp4', items: ['What to watch for'] }
+```
+
+Online videos need a network connection and a recent PowerPoint. With `animate`, the video frame stays in place while the rest of the slide fades in.
+
 ## Programmatic API
 
 ```ts

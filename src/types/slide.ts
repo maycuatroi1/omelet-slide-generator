@@ -109,6 +109,8 @@ export interface SlideData {
   details?: string[];
 
   imagePath?: string;
+  videoPath?: string;
+  videoLink?: string;
   imagePosition?: 'left' | 'right';
   caption?: string;
 

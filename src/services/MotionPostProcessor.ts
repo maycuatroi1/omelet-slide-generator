@@ -21,6 +21,7 @@ interface ShapeBox {
   cx: number;
   cy: number;
   hasText: boolean;
+  video: boolean;
 }
 
 const TRANSITIONS: Record<Exclude<SlideTransition, 'none'>, string> = {
@@ -48,10 +49,13 @@ export class MotionPostProcessor {
       let modified = false;
 
       if (m.animate && !xml.includes('<p:timing')) {
-        const shapes = this.readShapes(xml).filter(s =>
-          s.y >= top && s.y < bottom && !(s.cx >= fullW && s.cy >= fullH));
+        xml = this.uniqueShapeIds(xml);
+        const all = this.readShapes(xml);
+        const videos = all.filter(s => s.video);
+        const shapes = all.filter(s =>
+          !s.video && s.y >= top && s.y < bottom && !(s.cx >= fullW && s.cy >= fullH));
         if (shapes.length > 0) {
-          xml = this.insertBeforeExt(xml, this.timingXml(this.group(shapes)));
+          xml = this.insertBeforeExt(xml, this.timingXml(this.group(shapes), videos));
           modified = true;
           result.animated++;
         }
@@ -83,6 +87,18 @@ export class MotionPostProcessor {
     return xml.replace('</p:sld>', `${fragment}</p:sld>`);
   }
 
+  private static uniqueShapeIds(xml: string): string {
+    let next = Math.max(0, ...[...xml.matchAll(/<p:cNvPr id="(\d+)"/g)].map(m => Number(m[1]))) + 1;
+    const seen = new Set<string>();
+    return xml.replace(/<p:cNvPr id="(\d+)"/g, (tag, id: string) => {
+      if (!seen.has(id)) {
+        seen.add(id);
+        return tag;
+      }
+      return `<p:cNvPr id="${next++}"`;
+    });
+  }
+
   private static readShapes(xml: string): ShapeBox[] {
     const tree = xml.match(/<p:spTree>([\s\S]*)<\/p:spTree>/);
     if (!tree) return [];
@@ -102,6 +118,7 @@ export class MotionPostProcessor {
         cx: Number(ext[1]),
         cy: Number(ext[2]),
         hasText: match[1] === 'sp' && /<a:t>[^<]/.test(body),
+        video: match[1] === 'pic' && body.includes('<a:videoFile'),
       });
     }
     return shapes;
@@ -125,7 +142,7 @@ export class MotionPostProcessor {
     return groups;
   }
 
-  private static timingXml(groups: ShapeBox[][]): string {
+  private static timingXml(groups: ShapeBox[][], videos: ShapeBox[]): string {
     let id = 5;
     const effects: string[] = [];
     const builds: string[] = [];
@@ -144,6 +161,10 @@ export class MotionPostProcessor {
         if (s.hasText) builds.push(`<p:bldP spid="${s.id}" grpId="0" animBg="1"/>`);
       }
     });
+    const media = videos.map(v =>
+      `<p:video><p:cMediaNode vol="80000"><p:cTn id="${id++}" fill="hold" display="0">` +
+      `<p:stCondLst><p:cond delay="indefinite"/></p:stCondLst></p:cTn>` +
+      `<p:tgtEl><p:spTgt spid="${v.id}"/></p:tgtEl></p:cMediaNode></p:video>`).join('');
     const bldLst = builds.length > 0 ? `<p:bldLst>${builds.join('')}</p:bldLst>` : '';
     return '<p:timing><p:tnLst><p:par><p:cTn id="1" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst>' +
       '<p:seq concurrent="1" nextAc="seek"><p:cTn id="2" dur="indefinite" nodeType="mainSeq"><p:childTnLst>' +
@@ -155,7 +176,7 @@ export class MotionPostProcessor {
       '</p:childTnLst></p:cTn>' +
       '<p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst>' +
       '<p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst>' +
-      '</p:seq></p:childTnLst></p:cTn></p:par></p:tnLst>' +
+      '</p:seq>' + media + '</p:childTnLst></p:cTn></p:par></p:tnLst>' +
       bldLst +
       '</p:timing>';
   }
